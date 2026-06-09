@@ -1,0 +1,54 @@
+# Fly.io 배포 — PlayMCP 등재용.
+#
+# 운영자 명령:
+#   flyctl apps create school-menu-playmcp
+#   flyctl secrets set --app school-menu-playmcp NEIS_API_KEY=...
+#   flyctl deploy --config fly.playmcp.toml
+#   flyctl logs --app school-menu-playmcp
+#
+# PLAYMCP_MODE=1 — stateless_http, Origin/rate-limit 미들웨어
+# OAuth 없음 — PlayMCP 호스트가 사용자 게이트
+# 볼륨 없음 — 외부 NEIS API 의존, 영속 상태 없음
+
+app = "school-menu-playmcp"
+primary_region = "nrt"
+kill_signal = "SIGINT"
+kill_timeout = "10s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  MCP_TRANSPORT = "streamable-http"
+  MCP_HOST = "0.0.0.0"
+  PORT = "8000"
+  LOG_LEVEL = "INFO"
+  ENV = "prod"
+  PLAYMCP_MODE = "1"
+  # NEIS_API_KEY는 secrets로 주입 — 여기 두지 말 것.
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  max_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 15
+    hard_limit = 20
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1

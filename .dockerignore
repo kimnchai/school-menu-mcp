@@ -1,0 +1,49 @@
+# 빌드 컨텍스트에서 제외 — 이미지 크기·빌드시간 절감 + 비밀 누출 방지
+
+# 비밀
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 에디터·IDE
+.vscode/
+.idea/
+.claude/
+
+# OS·WSL
+.DS_Store
+*:Zone.Identifier
+
+# Git
+.git/
+.gitignore
+.github/
+
+# 컨테이너 구성 자체는 이미지에 안 들어감
+Dockerfile
+.dockerignore
+fly.toml
+fly.*.toml
+.fly/
+
+# 로컬 전용
+.mcp.json
+set_api_key.sh
+
+# 문서 — 런타임 미사용
+*.md
+docs/
+tests/
