@@ -201,6 +201,7 @@ if __name__ == "__main__":
     if MCP_TRANSPORT == "streamable-http":
         import uvicorn
 
+        mcp.settings.json_response = os.environ.get("MCP_JSON_RESPONSE", "1") == "1"
         starlette_app = mcp.streamable_http_app()
         final_app = starlette_app
         if PLAYMCP_MODE:
@@ -208,6 +209,6 @@ if __name__ == "__main__":
 
             final_app = GlobalRateLimitMiddleware(OriginCheckMiddleware(starlette_app))
 
-        uvicorn.run(final_app, host=MCP_HOST, port=MCP_PORT, log_level="info")
+        uvicorn.run(final_app, host=MCP_HOST, port=MCP_PORT, log_level="info", timeout_keep_alive=int(os.environ.get("MCP_KEEPALIVE", "30")))
     else:
         mcp.run(transport=MCP_TRANSPORT)
