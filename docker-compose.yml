@@ -1,0 +1,29 @@
+# firebat 배포용 — GHCR 이미지 pull + Cloudflare Tunnel 노출.
+# 빌드 안 함(이미지 참조). main push → publish-ghcr.yml → Watchtower auto-pull.
+#
+# firebat:  ~/school-menu-mcp/{docker-compose.yml,.env(chmod 600)}  →  docker compose up -d
+# .env:     서비스별 API 키 + HOST_PORT=8013
+# CF:       school-menu-mcp → http://localhost:8013  (cf_route.py)
+
+services:
+  server:
+    image: ghcr.io/kimnchai/school-menu-mcp:latest
+    container_name: school-menu-mcp
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8013}:8000"
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HOST: 0.0.0.0
+      PORT: "8000"
+      PLAYMCP_MODE: "1"
+    env_file:
+      - .env
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
