@@ -11,6 +11,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 
@@ -77,9 +78,17 @@ def _meal_to_dict(m: MealItem, include_allergies: bool) -> dict[str, Any]:
     return out
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="학교 검색",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    )
+)
 async def search_school(name: str) -> dict[str, Any]:
-    """학교명으로 학교를 검색해 급식 조회에 필요한 코드를 반환합니다.
+    """[학교 급식 정보] 학교명으로 학교를 검색해 급식 조회에 필요한 코드를 반환합니다.
 
     Args:
         name: 학교명 (부분 일치 가능, 예: "서울고", "한국과학영재")
@@ -96,14 +105,22 @@ async def search_school(name: str) -> dict[str, Any]:
     return {"count": len(schools), "schools": [_school_to_dict(s) for s in schools]}
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="급식 조회",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    )
+)
 async def get_meal(
     office_code: str,
     school_code: str,
     target_date: str | None = None,
     include_allergies: bool = True,
 ) -> dict[str, Any]:
-    """특정 날짜의 급식 메뉴(조식/중식/석식)를 조회합니다.
+    """[학교 급식 정보] 특정 날짜의 급식 메뉴(조식/중식/석식)를 조회합니다.
 
     Args:
         office_code: 시도교육청코드 (search_school 결과의 office_code)
@@ -127,7 +144,15 @@ async def get_meal(
     }
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="기간 급식 조회",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    )
+)
 async def get_meals_range(
     office_code: str,
     school_code: str,
@@ -135,7 +160,7 @@ async def get_meals_range(
     date_to: str,
     include_allergies: bool = False,
 ) -> dict[str, Any]:
-    """기간 내 모든 급식 메뉴를 조회합니다 (주간/월간 메뉴 조회용).
+    """[학교 급식 정보] 기간 내 모든 급식 메뉴를 조회합니다 (주간/월간 메뉴 조회용).
 
     Args:
         office_code: 시도교육청코드
@@ -167,14 +192,22 @@ async def get_meals_range(
     }
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        title="주간 급식 조회",
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    )
+)
 async def get_weekly_meal(
     office_code: str,
     school_code: str,
     reference_date: str | None = None,
     include_allergies: bool = False,
 ) -> dict[str, Any]:
-    """주어진 날짜가 속한 주(월~금)의 급식을 조회합니다.
+    """[학교 급식 정보] 주어진 날짜가 속한 주(월~금)의 급식을 조회합니다.
 
     Args:
         office_code: 시도교육청코드
